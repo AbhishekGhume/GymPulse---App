@@ -83,8 +83,16 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
+                        // OWNER DASHBOARD: Management workspace handler routing module
                         composable("owner_dashboard") {
-                            OwnerDashboardScreen()
+                            OwnerDashboardScreen(
+                                onLogoutSuccess = {
+                                    // Wipe clear full history routing stack traces on administrator sign out
+                                    navController.navigate("auth") {
+                                        popUpTo(0) { inclusive = true }
+                                    }
+                                }
+                            )
                         }
 
                         // MEMBER SCREEN 1: Main Dashboard (Streak, split, routine card)
