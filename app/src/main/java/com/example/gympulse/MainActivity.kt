@@ -43,7 +43,15 @@ class MainActivity : ComponentActivity() {
                             .addOnSuccessListener { document ->
                                 if (document != null && document.exists()) {
                                     val role = document.getString("role")
-                                    startDestination = if (role == "gym_owner") "owner_dashboard" else "member_dashboard"
+                                    val gymId = document.getString("gymId")
+
+                                    if (role == "gym_owner") {
+                                        startDestination = "owner_dashboard"
+                                    } else {
+                                        // CRITICAL CORRECTION: If the member has no linked gymId,
+                                        // route them directly to the scanner workflow page instead of dashboard.
+                                        startDestination = if (gymId.isNullOrBlank()) "scanner" else "member_dashboard"
+                                    }
                                 }
                                 isCheckingSession = false
                             }
@@ -64,6 +72,8 @@ class MainActivity : ComponentActivity() {
                         composable("auth") {
                             AuthScreen(
                                 onAuthSuccess = { role ->
+                                    // Let AuthScreen pass down the current user document status checks if preferred,
+                                    // or fetch real-time state. For basic routing handling:
                                     val target = if (role == "gym_owner") "owner_dashboard" else "member_dashboard"
                                     navController.navigate(target) {
                                         popUpTo("auth") { inclusive = true }
@@ -77,7 +87,7 @@ class MainActivity : ComponentActivity() {
                             GymScannerScreen(
                                 onJoinSuccess = {
                                     navController.navigate("member_dashboard") {
-                                        popUpTo("auth") { inclusive = true }
+                                        popUpTo("scanner") { inclusive = true }
                                     }
                                 }
                             )
@@ -102,6 +112,7 @@ class MainActivity : ComponentActivity() {
                                     navController.navigate("active_workout")
                                 },
                                 onLogoutSuccess = {
+                                    // Safe kickback redirection point triggered by user logout or real-time eviction listener
                                     navController.navigate("auth") {
                                         popUpTo(0) { inclusive = true }
                                     }

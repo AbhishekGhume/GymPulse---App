@@ -72,4 +72,6 @@ dependencies {
 
     // QR Code Engine Core
     implementation("com.google.zxing:core:3.5.3")
+
+    implementation("androidx.compose.material:material-icons-extended")
 }
